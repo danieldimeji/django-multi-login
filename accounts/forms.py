@@ -119,7 +119,7 @@ class SignInForm(forms.Form):
                 'class' : 'input100',
                 'name' : 'username',
                 'type' : 'text',
-                'placeholder': 'Username'
+                'placeholder': 'Email or Username'
             }
         )
     )
@@ -135,3 +135,35 @@ class SignInForm(forms.Form):
             }
         )
     )
+
+    def clean(self):
+        username_email = self.cleaned_data.get('username_email')
+        password = self.cleaned_data.get('password')
+        qs_username = User.objects.filter(username=username_email)
+        qs_email = User.objects.filter(email=username_email)
+  
+        if qs_username.exists():
+            user = authenticate(username=username_email, password=password)
+            if not user:
+                raise forms.ValidationError("Invalid login [username] details. Make sure details are correct")
+            return self.cleaned_data
+        elif qs_email.exists():
+            user = authenticate(username=qs_email[0].username, password=password)
+            if not user:
+                raise forms.ValidationError("Invalid login [email] details. Make sure details are correct")
+            return self.cleaned_data
+        else:
+            raise forms.ValidationError("Invalid login [No User] details. Make sure details are correct")
+
+
+    def login(self):
+        username_email = self.cleaned_data.get('username_email')
+        password = self.cleaned_data.get('password')
+        qs_username = User.objects.filter(username=username_email)
+        qs_email = User.objects.filter(email=username_email)
+
+        if qs_username.exists():
+            user = authenticate(username=username_email, password=password)
+        elif qs_email.exists():
+            user = authenticate(username=qs_email[0].username, password=password)
+        return user

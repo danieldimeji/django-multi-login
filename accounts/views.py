@@ -1,5 +1,6 @@
 from django.shortcuts import redirect, render
 from django.views import View
+from django.contrib.auth import login
 from .forms import SignUpForm, SignInForm
 
 
@@ -30,3 +31,18 @@ class SignInView(View):
 
     def get(self, request, *args, **kwargs):
         return render(request, self.template_name, {'form':self.form_class})
+
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST or None)
+        if form.is_valid():
+            user = form.login()
+            if user is not None:
+                login(request, user)
+                print('Logged In')
+                return redirect('sign-in')
+            else:
+                print('Failed Log In')
+                return render(request, self.template_name, {'form':self.form_class})
+        else:
+            print(form.errors)
+            return render(request, self.template_name, {'form':self.form_class})
