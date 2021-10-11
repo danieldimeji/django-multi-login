@@ -38,10 +38,8 @@ class SignInView(View):
             user = form.login()
             if user is not None:
                 login(request, user)
-                print('Logged In')
                 return redirect('sign-in')
             else:
-                print('Failed Log In')
                 return render(request, self.template_name, {'form':self.form_class})
         else:
             print(form.errors)
